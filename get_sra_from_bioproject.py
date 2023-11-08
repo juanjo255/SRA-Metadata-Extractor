@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 # PARSE CSV FILE DOWNLOADED FROM NCBI
 def parse_data(file) -> list:
-    data = pd.read_csv(file, delimiter=",")
+    data = pd.read_csv(file, delimiter=",", low_memory=False)
     # bioprojects = list()
     # for i in range(len(data.index)):
     #     for replicon in data.loc[i,'Replicons'].split('; '):
@@ -122,11 +122,11 @@ def get_sra_info_filtered_mito(input_excel_file: str, output_file: str, original
         right_on="bioproject_s",
         left_on="bioproject"
     )
-    # df = df[
-    #     (df["instrument"].isin(["GridION", "MinION", "PromethION"]))
-    #     & (df["total_size"].astype(int) > 0)
-    # ]
-    # df['date'] = date_sra_list
+    df["create_date_dt"] = df["create_date_dt"].apply(lambda x : x.split("-")[0])
+    df = df[
+        (df["instrument"].isin(["GridION", "MinION", "PromethION"]))
+        & (df["total_size"].astype(int) > 0)
+    ]
     df = df[df["total_size"].astype(int) > 0]
     #df.drop_duplicates(subset="bioproject", inplace=True)
     df.reset_index(drop=True, inplace=True)
@@ -138,21 +138,20 @@ def get_sra_info_filtered_mito(input_excel_file: str, output_file: str, original
 def analyse_dataset(file):
     df = pd.read_excel(file, index_col=0)
     df = (
-        df.groupby(["instrument"])
+        df.groupby(["create_date_dt","instrument"])
         .agg({"instrument": "count"})
         .assign(percentage=lambda x: x.instrument / x.instrument.sum() * 100)
     )
     # df.to_excel("sra_metadata_analysis_results.xlsx")
-    print(df)
-    return df.head()
+    return df
 
 
 if __name__ == "__main__":
-    filt_mito("datasets_metadata/wgs_selector_animal.csv", "datasets_metadata/sra_per_bioproject.xlsx")
-    # extend_info_filt_data("datasets_metadata/sra_per_bioproject.xlsx", "datasets_metadata/wgs_selector.csv", "datasets_metadata/sra_per_bioproject.xlsx")
+    filt_mito("datasets_examples/wgs_selector_fungi.csv", "datasets_examples/sra_per_bioproject.xlsx")
+    # # extend_info_filt_data("datasets_examples/sra_per_bioproject.xlsx", "datasets_examples/wgs_selector.csv", "datasets_examples/sra_per_bioproject.xlsx")
     get_sra_info_filtered_mito(
-        "datasets_metadata/sra_per_bioproject.xlsx",
-        "datasets_metadata/sra_metadata.xlsx",
-        "datasets_metadata/wgs_selector_animal.csv"
+        "datasets_examples/sra_per_bioproject.xlsx",
+        "datasets_examples/sra_metadata.xlsx",
+        "datasets_examples/wgs_selector_fungi.csv"
     )
-    analyse_dataset('datasets_metadata/sra_metadata.xlsx')
+    analyse_dataset('datasets_examples/sra_metadata.xlsx')
