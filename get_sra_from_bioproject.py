@@ -147,11 +147,11 @@ def analyse_dataset(file):
 
 
 if __name__ == "__main__":
-    filt_mito("datasets_examples/wgs_selector_fungi.csv", "datasets_examples/sra_per_bioproject.xlsx")
+    filt_mito("datasets_examples/wgs_selector_plant.csv", "datasets_examples/sra_per_bioproject.xlsx")
     # # extend_info_filt_data("datasets_examples/sra_per_bioproject.xlsx", "datasets_examples/wgs_selector.csv", "datasets_examples/sra_per_bioproject.xlsx")
     get_sra_info_filtered_mito(
         "datasets_examples/sra_per_bioproject.xlsx",
         "datasets_examples/sra_metadata.xlsx",
-        "datasets_examples/wgs_selector_fungi.csv"
+        "datasets_examples/wgs_selector_plant.csv"
     )
     analyse_dataset('datasets_examples/sra_metadata.xlsx')
