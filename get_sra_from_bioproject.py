@@ -16,35 +16,6 @@ def parse_data(file) -> list:
     bioprojects = data["bioproject_s"].to_list()
     return bioprojects
 
-# GO THROUGH EVERY RECORD AND FILTER MITOCONDRIAL GENOMES BY SRA
-def filt_mito(csv: str, output_file: str):
-    print("FILTERING MITOCHONDRIAS BY SRA")
-    result = list()
-    data = parse_data(csv)
-
-    # ITERATE EVERY 500 FILES SINCE API DOES NOT SUPPORT MORE THAN THAT
-    for span in trange(0, len(data), 500):
-        bioprojects = [i for i in data[span : span + 500] if isinstance(i, str)]
-        # bioprojects = ["PRJNA48091"]
-        result = result + [
-            (*v, bioprojects[k])
-            for k, v in enumerate(get_metadata_genome_api(bioprojects))
-        ]
-        # print(result)
-    dataframe = pd.DataFrame(result)
-    dataframe.rename(
-        columns={
-            0: "assembly_accesion",
-            1: "bioprojects",
-            2: "SRA_accession",
-            3: "organism_name",
-            4: "bioproject",
-        },
-        inplace=True,
-    )
-    dataframe.to_excel(output_file)
-    return dataframe.head()
-
 # GET DATA FROM EVERY BIOPROJECT
 def get_metadata_genome_api(bioprojects) -> list:
     result = list()
@@ -78,23 +49,53 @@ def get_metadata_genome_api(bioprojects) -> list:
                         )
     return result
 
-# ASSOCIATE GENOME ACCESSION TO A RECORD IN THE INITIAL DATASET
-def extend_info_filt_data(created_file, original_file, output):
-    my_data = pd.read_excel(created_file, index_col=0)
-    data_original = pd.read_csv(original_file, delimiter=",")
-    new_data = my_data.merge(
+# GO THROUGH EVERY RECORD AND FILTER BIOPROJECTS BY SRA AVAILABILITY
+def filt_data_by_sra(csv: str, output_file: str):
+    print("-> FILTERING DATA BY SRA <-")
+    result = list()
+    data = parse_data(csv)
+
+    # ITERATE EVERY 500 FILES SINCE API DOES NOT SUPPORT MORE THAN THAT
+    for span in trange(0, len(data), 500):
+        bioprojects = [i for i in data[span : span + 500] if isinstance(i, str)]
+        # bioprojects = ["PRJNA48091"]
+        result = result + [
+            (*v, bioprojects[k])
+            for k, v in enumerate(get_metadata_genome_api(bioprojects))
+        ]
+        # print(result)
+    dataframe = pd.DataFrame(result)
+    dataframe.rename(
+        columns={
+            0: "assembly_accesion",
+            1: "bioprojects",
+            2: "SRA_accession",
+            3: "organism_name",
+            4: "bioproject",
+        },
+        inplace=True,
+    )
+    dataframe.to_excel(output_file)
+    return dataframe.head()
+
+# ASSOCIATE A UNIQUE FEATURE IN THE PRUNED DATASET TO A RECORD IN THE INITIAL DATASET
+# TO GET EXTRA INFORMATION
+def extend_info_filt_data(base_df, ori_df, output):
+    my_data = base_df#pd.read_excel(created_file, index_col=0)
+    data_original = ori_df #pd.read_csv(original_file, delimiter=",")
+    new_df = my_data.merge(
         data_original[["bioproject_s", "create_date_dt"]],
         right_on="bioproject_s",
         left_on="bioproject",
     )
-    new_data.dropna(subset="SRA_accession", inplace=True)
-    new_data.drop_duplicates(subset="bioproject", inplace=True)
-    new_data.reset_index(drop=True, inplace=True)
-    new_data.to_excel(output)
-    return new_data.head()
+    new_df.dropna(subset="SRA_accession", inplace=True)
+    new_df.drop_duplicates(subset="bioproject", inplace=True)
+    new_df.reset_index(drop=True, inplace=True)
+    new_df.to_excel(output)
+    return new_df
 
-# GET SRA METADATA OF FILTERED MITOCHONDRIAL GENOMES
-def get_sra_info_filtered_mito(input_excel_file: str, output_file: str, original_file:str):
+# GET SRA METADATA OF FILTERED GENOMES
+def get_sra_metadata(input_excel_file: str, output_file: str, original_file:str):
     db = SRAweb()
     sra = pd.read_excel(input_excel_file, index_col=0)
     data_original = pd.read_csv(original_file, delimiter=",")
@@ -117,11 +118,9 @@ def get_sra_info_filtered_mito(input_excel_file: str, output_file: str, original
             "bioproject",
         ]
     ]
-    df = df.merge(
-        data_original[["bioproject_s", "create_date_dt"]],
-        right_on="bioproject_s",
-        left_on="bioproject"
-    )
+    
+    df = extend_info_filt_data(df, data_original)
+    
     df["create_date_dt"] = df["create_date_dt"].apply(lambda x : x.split("-")[0])
     df = df[
         (df["instrument"].isin(["GridION", "MinION", "PromethION"]))
@@ -135,7 +134,7 @@ def get_sra_info_filtered_mito(input_excel_file: str, output_file: str, original
 
 
 # DESCRIPTIVE STATISTICS
-def analyse_dataset(file):
+def analyze_dataset(file):
     df = pd.read_excel(file, index_col=0)
     df = (
         df.groupby(["create_date_dt","instrument"])
@@ -147,11 +146,11 @@ def analyse_dataset(file):
 
 
 if __name__ == "__main__":
-    filt_mito("datasets_examples/wgs_selector_plant.csv", "datasets_examples/sra_per_bioproject.xlsx")
+    filt_data_by_sra("datasets_examples/wgs_selector_plant.csv", "datasets_examples/sra_per_bioproject.xlsx")
     # # extend_info_filt_data("datasets_examples/sra_per_bioproject.xlsx", "datasets_examples/wgs_selector.csv", "datasets_examples/sra_per_bioproject.xlsx")
-    get_sra_info_filtered_mito(
+    get_sra_metadata(
         "datasets_examples/sra_per_bioproject.xlsx",
         "datasets_examples/sra_metadata.xlsx",
         "datasets_examples/wgs_selector_plant.csv"
     )
-    analyse_dataset('datasets_examples/sra_metadata.xlsx')
+    analyze_dataset('datasets_examples/sra_metadata.xlsx')
