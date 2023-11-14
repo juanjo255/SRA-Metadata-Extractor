@@ -3,7 +3,7 @@ from ncbi.datasets import GenomeApi as DatasetsGenomeApi
 from ncbi.datasets.openapi import ApiClient as DatasetsApiClient
 from pysradb.sraweb import SRAweb
 from tqdm import trange
-import matplotlib.pyplot as plt
+
 
 # PARSE CSV FILE DOWNLOADED FROM NCBI
 def parse_data(file) -> list:
@@ -15,6 +15,7 @@ def parse_data(file) -> list:
     #             bioprojects.append(data.loc[i,'BioProject'])
     bioprojects = data["bioproject_s"].to_list()
     return bioprojects
+
 
 # GET DATA FROM EVERY BIOPROJECT
 def get_metadata_genome_api(bioprojects) -> list:
@@ -49,6 +50,7 @@ def get_metadata_genome_api(bioprojects) -> list:
                         )
     return result
 
+
 # GO THROUGH EVERY RECORD AND FILTER BIOPROJECTS BY SRA AVAILABILITY
 def filt_data_by_sra(csv: str, output_file: str):
     print("-> FILTERING DATA BY SRA <-")
@@ -78,11 +80,12 @@ def filt_data_by_sra(csv: str, output_file: str):
     dataframe.to_excel(output_file)
     return dataframe.head()
 
+
 # ASSOCIATE A UNIQUE FEATURE IN THE PRUNED DATASET TO A RECORD IN THE INITIAL DATASET
 # TO GET EXTRA INFORMATION
 def extend_info_filt_data(base_df, ori_df, output):
-    my_data = base_df#pd.read_excel(created_file, index_col=0)
-    data_original = ori_df #pd.read_csv(original_file, delimiter=",")
+    my_data = base_df  # pd.read_excel(created_file, index_col=0)
+    data_original = ori_df  # pd.read_csv(original_file, delimiter=",")
     new_df = my_data.merge(
         data_original[["bioproject_s", "create_date_dt"]],
         right_on="bioproject_s",
@@ -94,8 +97,9 @@ def extend_info_filt_data(base_df, ori_df, output):
     new_df.to_excel(output)
     return new_df
 
+
 # GET SRA METADATA OF FILTERED GENOMES
-def get_sra_metadata(input_excel_file: str, output_file: str, original_file:str):
+def get_sra_metadata(input_excel_file: str, output_file: str, original_file: str):
     db = SRAweb()
     sra = pd.read_excel(input_excel_file, index_col=0)
     data_original = pd.read_csv(original_file, delimiter=",")
@@ -118,16 +122,18 @@ def get_sra_metadata(input_excel_file: str, output_file: str, original_file:str)
             "bioproject",
         ]
     ]
-    
+
+    ## Get more info from the original dataset for every bioproject
     df = extend_info_filt_data(df, data_original)
-    
-    df["create_date_dt"] = df["create_date_dt"].apply(lambda x : x.split("-")[0])
-    df = df[
-        (df["instrument"].isin(["GridION", "MinION", "PromethION"]))
-        & (df["total_size"].astype(int) > 0)
-    ]
+    df["create_date_dt"] = df["create_date_dt"].apply(lambda x: x.split("-")[0])
+
+    ## Filt for the instrument of interest
+    # df = df[
+    #     (df["instrument"].isin(["GridION", "MinION", "PromethION"]))
+    #     & (df["total_size"].astype(int) > 0)
+    # ]
+    ## Get only SRAs with content
     df = df[df["total_size"].astype(int) > 0]
-    #df.drop_duplicates(subset="bioproject", inplace=True)
     df.reset_index(drop=True, inplace=True)
     df.to_excel(output_file)
     return df
@@ -137,7 +143,7 @@ def get_sra_metadata(input_excel_file: str, output_file: str, original_file:str)
 def analyze_dataset(file):
     df = pd.read_excel(file, index_col=0)
     df = (
-        df.groupby(["create_date_dt","instrument"])
+        df.groupby(["create_date_dt", "instrument"])
         .agg({"instrument": "count"})
         .assign(percentage=lambda x: x.instrument / x.instrument.sum() * 100)
     )
@@ -146,11 +152,13 @@ def analyze_dataset(file):
 
 
 if __name__ == "__main__":
-    filt_data_by_sra("datasets_examples/wgs_selector_plant.csv", "datasets_examples/sra_per_bioproject.xlsx")
-    # # extend_info_filt_data("datasets_examples/sra_per_bioproject.xlsx", "datasets_examples/wgs_selector.csv", "datasets_examples/sra_per_bioproject.xlsx")
+    filt_data_by_sra(
+        "datasets_examples/wgs_selector_animal.csv",
+        "datasets_examples/sra_per_bioproject.xlsx",
+    )
     get_sra_metadata(
         "datasets_examples/sra_per_bioproject.xlsx",
         "datasets_examples/sra_metadata.xlsx",
-        "datasets_examples/wgs_selector_plant.csv"
+        "datasets_examples/wgs_selector_plant.csv",
     )
-    analyze_dataset('datasets_examples/sra_metadata.xlsx')
+    analyze_dataset("datasets_examples/sra_metadata.xlsx")
