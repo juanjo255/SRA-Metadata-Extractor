@@ -53,7 +53,7 @@ def get_metadata_genome_api(bioprojects) -> list:
 
 # GO THROUGH EVERY RECORD AND FILTER BIOPROJECTS BY SRA AVAILABILITY
 def filt_data_by_sra(csv: str, output_file: str):
-    print("-> FILTERING DATA BY SRA <-")
+    print("---> FILTERING DATA BY SRA <---")
     result = list()
     data = parse_data(csv)
 
@@ -83,7 +83,7 @@ def filt_data_by_sra(csv: str, output_file: str):
 
 # ASSOCIATE A UNIQUE FEATURE IN THE PRUNED DATASET TO A RECORD IN THE INITIAL DATASET
 # TO GET EXTRA INFORMATION
-def extend_info_filt_data(base_df, ori_df, output):
+def extend_info_filt_data(base_df, ori_df, output=None):
     my_data = base_df  # pd.read_excel(created_file, index_col=0)
     data_original = ori_df  # pd.read_csv(original_file, delimiter=",")
     new_df = my_data.merge(
@@ -91,10 +91,9 @@ def extend_info_filt_data(base_df, ori_df, output):
         right_on="bioproject_s",
         left_on="bioproject",
     )
-    new_df.dropna(subset="SRA_accession", inplace=True)
-    new_df.drop_duplicates(subset="bioproject", inplace=True)
+    new_df.drop_duplicates(subset="run_accession", inplace=True)
     new_df.reset_index(drop=True, inplace=True)
-    new_df.to_excel(output)
+    #new_df.to_excel(output)
     return new_df
 
 
@@ -148,6 +147,11 @@ def analyze_dataset(file):
         .assign(percentage=lambda x: x.instrument / x.instrument.sum() * 100)
     )
     # df.to_excel("sra_metadata_analysis_results.xlsx")
+    print()
+    print("---> Description of returned dataset <---")
+    print()
+    print(df)
+    print()
     return df
 
 
@@ -159,6 +163,6 @@ if __name__ == "__main__":
     get_sra_metadata(
         "datasets_examples/sra_per_bioproject.xlsx",
         "datasets_examples/sra_metadata.xlsx",
-        "datasets_examples/wgs_selector_plant.csv",
+        "datasets_examples/wgs_selector_animal.csv",
     )
     analyze_dataset("datasets_examples/sra_metadata.xlsx")
