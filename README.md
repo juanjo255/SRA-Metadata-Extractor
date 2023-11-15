@@ -1,4 +1,4 @@
-# Get sra metadata
+# Get SRA metadata
 
 ## Table of Contents
 + [About](#about)
