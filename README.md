@@ -17,23 +17,24 @@ The folder `datasets_examples/` contains examples of input and ouputs:
 ## Getting Started <a name = "getting_started"></a>
 
 ### Installing
-
-A step by step series of examples that tell you how to get a development env running.
-
-Say what the step will be
-
-```
-Give the example
-```
-
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo.
+* It's encourage to use conda enviroment.
+* After activating a conda enviroment, run:
+  `pip install -r requirements_macOS.txt`
 
 ## Usage <a name = "usage"></a>
 
-Add notes about how to use the system.
+* Run `python3 main.py --help` for help message
+```usage: python3 main.py [-h] [-o OUTPUT] CSVname
+
+Retrieve the SRA metadata, which includes accession, sequencing instrument and more, from a CSV file with bioprojects retrieved from the NCBI
+
+positional arguments:
+  CSVname               A CSV file with a column of bioprojects named "bioproject_s".
+
+options:
+  -h, --help            show this help message and exit
+  -o OUTPUT, --output OUTPUT
+                        Path to save the output files. [./]
+
+Juan Picon Cossio
+```
