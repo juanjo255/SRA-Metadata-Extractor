@@ -29,9 +29,9 @@ def get_metadata_genome_api(bioprojects) -> list:
             # ITER THROUGH ASSEMBLIES
             for assembly in assemblies_dict["assemblies"]:
                 # CHECK THAT KEYS STORING SRA EXIST
-                if not ("biosample" in assembly["assembly"].keys()):
+                if "biosample" not in assembly["assembly"].keys():
                     continue
-                elif not ("sample_ids" in assembly["assembly"]["biosample"].keys()):
+                elif "sample_ids" not in assembly["assembly"]["biosample"].keys():
                     continue
                 for record in assembly["assembly"]["biosample"]["sample_ids"]:
                     if "SRA" in record.values():

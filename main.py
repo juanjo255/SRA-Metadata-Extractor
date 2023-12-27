@@ -3,7 +3,7 @@ from src import filt_data_by_sra, get_sra_metadata, analyze_dataset
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-                        prog='SRA-Metadata-Extractor',
+                        prog='python3 main.py',
                         description='Retrieve the SRA metadata, which includes accession, sequencing instrument and more, from a CSV file with bioprojects retrieved from the NCBI',
                         epilog='Juan Picon Cossio')
     parser.add_argument('CSVname', help='A CSV file with a column of bioprojects named "bioproject_s".')
