@@ -20,6 +20,9 @@ The folder `datasets_examples/` contains examples of input and ouputs:
 * It's encourage to use conda enviroment.
 * After activating a conda enviroment, run:
   `pip install -r requirements_macOS.txt`
+* or install every dependency:
+  
+     ```pip install pandas ncbi-datasets-pyli ncbi-datasets-pyli tqdm```
 
 ## Usage <a name = "usage"></a>
 
