@@ -22,7 +22,7 @@ The folder `datasets_examples/` contains examples of input and ouputs:
   `pip install -r requirements_macOS.txt`
 * or install every dependency:
   
-     ```pip install pandas ncbi-datasets-pyli ncbi-datasets-pyli tqdm```
+     ```pip install pandas ncbi-datasets-pyli ncbi-datasets-pyli tqdm openpyxl```
 
 ## Usage <a name = "usage"></a>
 
