@@ -156,13 +156,15 @@ def analyze_dataset(file):
 
 
 if __name__ == "__main__":
+
+    file_name = "wgs_selector_animal.csv"
     filt_data_by_sra(
-        "datasets_examples/wgs_selector_animal.csv",
-        "datasets_examples/sra_per_bioproject.xlsx",
+        f"datasets_examples/{file_name}",
+        f"datasets_examples/sra_per_bioproject.{file_name}.xlsx",
     )
     get_sra_metadata(
-        "datasets_examples/sra_per_bioproject.xlsx",
-        "datasets_examples/sra_metadata.xlsx",
-        "datasets_examples/wgs_selector_animal.csv",
+        f"datasets_examples/sra_per_bioproject.{file_name}.xlsx",
+        f"datasets_examples/sra_metadata.{file_name}.xlsx",
+        f"datasets_examples/{file_name}",
     )
-    analyze_dataset("datasets_examples/sra_metadata.xlsx")
+    analyze_dataset(f"datasets_examples/sra_metadata.{file_name}.xlsx")
